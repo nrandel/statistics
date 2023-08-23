@@ -17,6 +17,10 @@ print(df)
 # %%
 # box and wisker plot with label on left side
 
-df.boxplot(vert=False, grid = False, color=dict(boxes='k', whiskers='k', medians='b', caps='k'))
+ax = df.boxplot(vert=False, grid = False, color=dict(boxes='k', whiskers='k', medians='b', caps='k'), showfliers=False) #showfliers=False hide outlier datapoints
 
+# %%
+# Export plot as svg
+
+ax.figure.savefig('/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/feeding_experiment.svg')
 # %%
