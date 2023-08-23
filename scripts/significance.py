@@ -13,11 +13,7 @@ df = pd.read_csv("/Users/nadine/repos/statistics/data/size-Pd_June2023.csv")
 print(df)        
 
 # %%
-# Replace NaN with empty string
 
-#df = df.fillna('')
-
-# %%
 # Transform colum to list
 
 group1 = df.iloc[:, 4].tolist()
@@ -34,12 +30,6 @@ from scipy.special import stdtr
 
 output = ttest_ind(group1, group2, nan_policy= "omit") #ttest_ind = from independent groups; 'omit' ignores NaN
 
-
-# %% test
-
-a = [1,4,2,7,4,4,5,2]
-b = [6,6,2,4,5,5,1,1]
-output = ttest_ind(a, b) 
-
+print(output)
 
 # %%
