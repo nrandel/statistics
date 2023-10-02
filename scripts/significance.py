@@ -9,16 +9,16 @@ import csv
 # Import csv as panda dataframe
 
 import pandas as pd
-df = pd.read_csv("/Users/nadine/repos/statistics/data/size-Pd_June2023.csv") 
+df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/BF_EdU_merged_um.csv") 
 print(df)        
 
 # %%
 
 # Transform colum to list
 
-group1 = df.iloc[:, 4].tolist()
+group1 = df.iloc[:, 12].tolist()
 
-group2 = df.iloc[:, 5].tolist()
+group2 = df.iloc[:, 13].tolist()
 
 
 # %%
