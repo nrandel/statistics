@@ -10,7 +10,7 @@ import csv
 
 import pandas as pd
 #df = pd.read_csv("/Users/nadine/repos/statistics/data/size-Pd_June2023-um.csv") 
-df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/BF_EdU_merged_um-grouped.csv") 
+df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/BF_EdU-larvae_size-merge_um.csv") 
 print(df) 
 
 # Values in current dataframe are in some value from Fiji!!
@@ -28,3 +28,4 @@ ax = df.boxplot(vert=False, grid = False, color=dict(boxes='k', whiskers='k', me
 ax.figure.savefig('/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/feeding_experiment.svg')
 # %%
 # diff figure style 
+"test for git"
