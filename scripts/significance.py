@@ -76,8 +76,8 @@ for col in selected_columns.columns:
 
 all_column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
 
-group1_column_name = '3dpf cntr'
-group2_column_name = '8dpf G. marina'
+group1_column_name = '4dpf G. marina'
+group2_column_name = '4dpf cntr'
 
 # Remove NaN values from each group column-wise
 group1 = df[group1_column_name].dropna()
@@ -97,12 +97,26 @@ else:
 # %%
 # unpaired t-test
 
-from scipy.stats import ttest_ind, ttest_ind_from_stats
-from scipy.special import stdtr
+# Specify the column names for the two groups
+all_column_names = ['3dpf cntr', '3dpf Tetraselmis', '3dpf G. marina', '4dpf cntr', '4dpf Tetraselmis', '4dpf G. marina', '5dpf cntr', '5dpf Tetraselmis', '5dpf G. marina', '6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina', '8dpf cntr', '8dpf Tetraselmis', '8dpf G. marina']
 
+group1_column_name = '4dpf G. marina'
+group2_column_name = '4dpf cntr'
 
-output = ttest_ind(group1, group2, nan_policy= "omit") #ttest_ind = from independent groups; 'omit' ignores NaN
+# Extract the actual data for the two groups and remove NaN values
+group1_data = df[group1_column_name].dropna()
+group2_data = df[group2_column_name].dropna()
 
-print(output)
+# Perform the t-test
+t_statistic, p_value = stats.ttest_ind(group1_data, group2_data)
+
+alpha = 0.05  # significance level
+print("t-statistic:", t_statistic)
+print("p-value:", p_value)
+
+if p_value < alpha:
+    print("Reject the null hypothesis. There is a significant difference between the means.")
+else:
+    print("Fail to reject the null hypothesis. There is no significant difference between the means.")
 
 # %%
