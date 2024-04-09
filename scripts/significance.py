@@ -20,7 +20,7 @@ group1 = df.iloc[:, 17].tolist()
 group2 = df.iloc[:, 18].tolist()
 
 #%% Choose columnns by name
-all_column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
+#column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
 column_names = ['3dpf cntr']
 selected_columns = df[column_names]
 
@@ -31,10 +31,14 @@ selected_columns = df[column_names]
 plt.figure(figsize=(10, 4))
 
 plt.subplot(1, 2, 1)
-selected_columns.hist(bins=30, density=True, alpha=0.6, color='g')
+for col in selected_columns.columns:
+    # Ignore NaN values for each column
+    data = selected_columns[col].dropna()
+    plt.hist(data, bins=30, density=True, alpha=0.6, label=col)
 plt.title('Histogram of Data')
 plt.xlabel('Value')
 plt.ylabel('Density')
+plt.legend()
 
 plt.subplot(1, 2, 2)
 for col in selected_columns.columns:
@@ -56,7 +60,7 @@ for col in selected_columns.columns:
     print("p-value:", p_value)
     alpha = 0.05
     if p_value > alpha:
-        print("Data looks Gaussian (fail to reject H0)") # normal distribution
+        print("Data looks Gaussian (fail to reject H0)") #normal distribution
     else:
         print("Data does not look Gaussian (reject H0)")
 
