@@ -20,8 +20,8 @@ group1 = df.iloc[:, 17].tolist()
 group2 = df.iloc[:, 18].tolist()
 
 #%% Choose columnns by name
-#column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
-column_names = ['3dpf cntr']
+column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
+#column_names = ['3dpf cntr']
 selected_columns = df[column_names]
 
 # %%
@@ -63,6 +63,24 @@ for col in selected_columns.columns:
         print("Data looks Gaussian (fail to reject H0)") #normal distribution
     else:
         print("Data does not look Gaussian (reject H0)")
+
+# %% 
+
+# altrenative test (Kolmogorov-Smirnov Test) for normal distribution
+
+df = df['3dpf cntr'].dropna()  # Extract the column and drop NaN values
+
+# Perform the Kolmogorov-Smirnov test
+kstest_statistic, kstest_pvalue = stats.kstest(data, 'norm')
+
+alpha = 0.05  # significance level
+print("Kolmogorov-Smirnov test statistic:", kstest_statistic)
+print("p-value:", kstest_pvalue)
+
+if kstest_pvalue < alpha:
+    print("Reject the null hypothesis. Data is not normally distributed.")
+else:
+    print("Fail to reject the null hypothesis. Data may be normally distributed.")
 
 # %%
 # unpaired t-test
