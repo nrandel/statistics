@@ -7,21 +7,17 @@ import scipy.stats as stats
 import csv
 
 # %%
-# Import csv as panda dataframe
+# Import csv as panda dataframe 
 
-import pandas as pd
-df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/BF_EdU-larvae/BF_EdU-larvae_size-merge_um.csv") 
-print(df)        
+# EdU exp
+#df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/BF_EdU-larvae/BF_EdU-larvae_size-merge_um.csv")  
 
-# %%
-# Transform column to list (used for unpaired t-test below)
-
-group1 = df.iloc[:, 17].tolist()
-group2 = df.iloc[:, 18].tolist()
+# Feeding exp
+df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/Feeding-Experiments-AxioZoom_Exeter_1_7-13-2023/Feeding-size-px.csv")  
 
 #%% Choose columnns by name
 #column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
-column_names = ['3dpf Tetraselmis']
+column_names = ['3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf Tetraselmis' ,'5dpf G. marina', '6dpf Tetraselmis', '6dpf G. marina']
 selected_columns = df[column_names]
 
 # %%
@@ -76,8 +72,8 @@ for col in selected_columns.columns:
 
 all_column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
 
-group1_column_name = '4dpf G. marina'
-group2_column_name = '4dpf cntr'
+group1_column_name = '6dpf G. marina'
+group2_column_name = '6dpf Tetraselmis'
 
 # Remove NaN values from each group column-wise
 group1 = df[group1_column_name].dropna()
@@ -100,8 +96,8 @@ else:
 # Specify the column names for the two groups
 all_column_names = ['3dpf cntr', '3dpf Tetraselmis', '3dpf G. marina', '4dpf cntr', '4dpf Tetraselmis', '4dpf G. marina', '5dpf cntr', '5dpf Tetraselmis', '5dpf G. marina', '6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina', '8dpf cntr', '8dpf Tetraselmis', '8dpf G. marina']
 
-group1_column_name = '4dpf G. marina'
-group2_column_name = '4dpf cntr'
+group1_column_name = '5dpf G. marina'
+group2_column_name = '5dpf cntr'
 
 # Extract the actual data for the two groups and remove NaN values
 group1_data = df[group1_column_name].dropna()
@@ -118,5 +114,77 @@ if p_value < alpha:
     print("Reject the null hypothesis. There is a significant difference between the means.")
 else:
     print("Fail to reject the null hypothesis. There is no significant difference between the means.")
+
+# %%
+#chi-square test of yolk data
+
+import numpy as np
+from scipy.stats import chi2_contingency
+
+# Example data (replace with your actual data)
+# Each row represents a condition, and each column represents the presence (1) or absence (' ') of the feature
+data = np.array([[10, 10],  # Condition 1 'no food': 10 individuals with feature, 10 without
+                 [2, 20],  # Condition 2 'T': 2 individuals with feature, 20 without
+                 [5, 19]])  # Condition 3 'D': 5 individuals with feature, 19 without
+
+# Perform Chi-squared test
+chi2_stat, p_val, dof, expected = chi2_contingency(data)
+
+# Output results
+print("Chi-squared statistic:", chi2_stat)
+print("P-value:", p_val)
+print("Degrees of freedom:", dof)
+print("Expected frequencies:")
+print(expected)
+
+# Interpret results
+alpha = 0.05  # Significance level
+print("\n")
+if p_val < alpha:
+    print("There is a significant association between condition and feature presence.")
+else:
+    print("There is no significant association between condition and feature presence.")
+
+# %%
+import numpy as np
+from scipy.stats import chi2_contingency
+
+# Example data (replace with your actual data)
+data = np.array([[10, 20],  # Condition 1: 10 individuals with feature, 10 without
+                 [15, 25]]) # Condition 2: 15 individuals with feature, 25 without
+
+# Perform Chi-squared test for independence
+chi2_stat, p_val, dof, expected = chi2_contingency(data)
+
+# Output results
+print("Chi-squared statistic:", chi2_stat)
+print("P-value:", p_val)
+print("Degrees of freedom:", dof)
+print("Expected frequencies:")
+print(expected)
+
+# Interpret results
+alpha = 0.05  # Significance level
+if p_val < alpha:
+    print("There is a significant association between condition and feature presence.")
+else:
+    print("There is no significant association between condition and feature presence.")
+
+# %%
+# Fisher's exact test instead of chi2-contincency for small (<=5) expected frequencies
+# The input table must be 2x2
+
+import numpy as np
+from scipy.stats import fisher_exact
+
+# Define the data
+data = np.array([[10, 10],  # Condition 1 'no food': 10 individuals with feature, 10 without
+                 [2, 20]])   # Condition 2 'T': 2 individuals with feature, 20 without  
+
+# Perform Fisher's exact test
+odds_ratio, p_value = fisher_exact(data)
+
+print("Odds Ratio:", odds_ratio)
+print("P-value:", p_value)
 
 # %%
