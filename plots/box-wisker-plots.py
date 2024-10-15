@@ -12,7 +12,7 @@ import csv
 #df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/BF_EdU-larvae/BF_EdU-larvae_size-merge_um.csv") 
 
 # Feeding exp
-df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/Feeding-Experiments-AxioZoom_Exeter_1_7-13-2023/Feeding-size-px.csv")  
+df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/Feeding-Experiments-AxioZoom_Exeter_1_7-13-2023/Feeding-size_um.csv")  
 
 
 # %%
@@ -24,7 +24,7 @@ ax = df.boxplot(vert=False, grid = False, color=dict(boxes='k', whiskers='k', me
 # %%
 # Export plot as svg
 
-ax.figure.savefig('/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/feeding_experiment_axiozoom-px.svg')
+ax.figure.savefig('/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/feeding_experiment_axiozoom_um.svg')
 # %%
 # test
 # line plot with media
