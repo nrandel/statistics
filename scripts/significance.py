@@ -10,14 +10,14 @@ import csv
 # Import csv as panda dataframe 
 
 # EdU exp
-df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/BF_EdU-larvae/BF_EdU-larvae_size-merge_um.csv")  
+#df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/BF_EdU-larvae/BF_EdU-larvae_size-merge_um.csv")  
 
 # Feeding exp
-#df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/Feeding-Experiments-AxioZoom_Exeter_1_7-13-2023/Feeding-size-px.csv")  
+df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/Feeding-Experiments-AxioZoom_Exeter_1_7-13-2023/Feeding-size_um.csv")  
 
 #%% Choose columnns by name
-column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
-#column_names = ['3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf Tetraselmis' ,'5dpf G. marina', '6dpf Tetraselmis', '6dpf G. marina']
+#column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
+column_names = ['3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf Tetraselmis' ,'5dpf G. marina', '6dpf Tetraselmis', '6dpf G. marina']
 selected_columns = df[column_names]
 
 # %%
@@ -72,8 +72,8 @@ for col in selected_columns.columns:
 
 all_column_names = ['3dpf cntr', '3dpf Tetraselmis' ,'3dpf G. marina' ,'4dpf cntr' ,'4dpf Tetraselmis' ,'4dpf G. marina' ,'5dpf cntr' ,'5dpf Tetraselmis' ,'5dpf G. marina' ,'6dpf cntr', '6dpf Tetraselmis', '6dpf G. marina', '7dpf cntr', '7dpf Tetraselmis', '7dpf G. marina' , '8dpf cntr' ,'8dpf Tetraselmis' ,'8dpf G. marina']  
 
-group1_column_name = '3dpf G. marina'
-group2_column_name = '3dpf Tetraselmis'
+group1_column_name = '6dpf Tetraselmis'
+group2_column_name = '6dpf G. marina'
 
 # Remove NaN values from each group column-wise
 group1 = df[group1_column_name].dropna()
@@ -90,6 +90,7 @@ if mannwhitneyu_pvalue < alpha:
     print("Reject the null hypothesis. There are significant differences between the groups.")
 else:
     print("Fail to reject the null hypothesis. There are no significant differences between the groups.")
+
 # %%
 # unpaired t-test
 
@@ -170,16 +171,19 @@ if p_val < alpha:
 else:
     print("There is no significant association between condition and feature presence.")
 
+
+
+
 # %%
-# Fisher's exact test instead of chi2-contincency for small (<=5) expected frequencies
+# Fisher's exact test instead of chi2-contincency for small (<=5) expected frequencies and conditio == 0
 # The input table must be 2x2
 
 import numpy as np
 from scipy.stats import fisher_exact
 
 # Define the data
-data = np.array([[10, 10],  # Condition 1 'no food': 10 individuals with feature, 10 without
-                 [2, 20]])   # Condition 2 'T': 2 individuals with feature, 20 without  
+data = np.array([[9, 10],  # Condition 1 'no food': 10 individuals with feature, 10 without
+                 [19, 5]])   # Condition 2 'T': 2 individuals with feature, 20 without  
 
 # Perform Fisher's exact test
 odds_ratio, p_value = fisher_exact(data)
