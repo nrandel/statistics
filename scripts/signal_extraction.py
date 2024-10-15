@@ -133,9 +133,7 @@ print(grouped_data)
 
 # %%
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-
+# Strip plot for total signal area
 # Assuming final_results is defined from your previous steps
 
 # Set the age group you want to plot (change this to None to plot all age groups)
@@ -179,4 +177,47 @@ plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.show()
 
 
+# %%
+# Strip plot for weighted_avg_percent_area
+# Assuming final_results is defined from your previous steps
+
+# Set the age group you want to plot (change this to None to plot all age groups)
+selected_age_group = None  # Change this to a specific age group like '3dpf' or keep as None
+
+# Filter the data based on the selected age group
+if selected_age_group:
+    age_groups = [selected_age_group]
+else:
+    age_groups = final_results['age_group'].unique()
+
+# Create a figure with subplots
+num_age_groups = len(age_groups)
+fig, axes = plt.subplots(nrows=1, ncols=num_age_groups, figsize=(10, 5), sharey=True)
+
+# If there's only one age group, axes will not be a list, so we need to handle that case
+if num_age_groups == 1:
+    axes = [axes]  # Convert axes to a list for consistency
+
+# Loop through each age group to create a subplot
+for ax, age in zip(axes, age_groups):
+    # Filter the data for the current age group
+    age_group_data = final_results[final_results['age_group'] == age]
+    
+    # Create a strip plot for the current age group
+    sns.stripplot(data=age_group_data, x='sample_group', y='weighted_avg_percent_area', 
+                  hue='area', dodge=True, marker='o', alpha=0.7, ax=ax)
+    
+    # Set title and labels
+    ax.set_title(f'Age Group: {age}')
+    ax.set_xlabel('Sample Group')
+    ax.set_ylabel('weighted_avg_percent_area')
+
+# Adjust layout
+plt.tight_layout()
+
+# Show the legend
+plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+# Display the plot
+plt.show()
 # %%
