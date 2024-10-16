@@ -221,3 +221,52 @@ plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
 # Display the plot
 plt.show()
 # %%
+###TEST###
+###REFINED PLOT FKT###
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+# Assuming final_results is defined from your previous steps
+
+# Step 1: Customize the order of sample groups (C, T, D, etc.)
+custom_sample_group_order = ['C', 'T', 'D']  # Change this to your desired order
+
+# Step 2: Customize the order of areas (Head, 1st, 2nd, etc.)
+custom_area_order = ['Head', '1st', '2nd', '3rd', 'Pyg']  # Adjust based on your areas
+
+# Step 3: Plot for each age group separately with custom y-axis scaling
+age_groups = final_results['age_group'].unique()
+
+for age in age_groups:
+    # Filter the data for the current age group
+    age_group_data = final_results[final_results['age_group'] == age]
+    
+    # Sort sample_group and area columns based on the custom orders
+    age_group_data['sample_group'] = pd.Categorical(age_group_data['sample_group'], categories=custom_sample_group_order, ordered=True)
+    age_group_data['area'] = pd.Categorical(age_group_data['area'], categories=custom_area_order, ordered=True)
+
+    # Create a new figure for each age group
+    plt.figure(figsize=(8, 6))
+    
+    # Create a strip plot
+    sns.stripplot(data=age_group_data, x='sample_group', y='total_signal_area', 
+                  hue='area', dodge=True, marker='o', alpha=0.7, size=10, palette='Set1')
+    
+    # Set title and labels
+    plt.title(f'Strip Plot of Total Signal Area for Age Group: {age}')
+    plt.xlabel('Sample Group')
+    plt.ylabel('Total Signal Area')
+
+    # Show the legend outside the plot
+    plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Adjust y-axis scale to fit the data optimally
+    plt.ylim(age_group_data['total_signal_area'].min() - 100, age_group_data['total_signal_area'].max() + 1000)
+
+    # Adjust layout and show the plot
+    plt.tight_layout()
+    plt.show()
+
+# %%
