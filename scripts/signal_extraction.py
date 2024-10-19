@@ -82,7 +82,7 @@ print(final_results[['sample', 'filename', 'total_area', 'total_signal_area', 'w
 # Parse the data for area, age_group,sample_group
 # Assuming final_results is already defined from your previous code
 
-# Step 1: Function to extract area, age group, sample group, and replicate
+# Step 1: Function to extract area, age group, sample group, replicate, and larval count
 def extract_grouping_info(row):
     filename = row['filename']
     sample = row['sample']
@@ -99,22 +99,25 @@ def extract_grouping_info(row):
     # Extract sample group (D, T, or C) without the number
     sample_group = sample.split('_')[2][0]  # Get the first letter (C, D, or T)
     
-    # Extract replicate number from sample (the number after the first letter in the sample group)
+    # Extract replicate number from sample (the number after T, C, or D)
     replicate = sample.split('_')[2][1:].split('-')[0]  # Extract the number after T, C, or D
     
-    return area, age_group, sample_group, replicate
+    # Extract larval count from the filename (number after '_L')
+    larval_count = filename.split('_L')[1].split('.')[0]  # Get the part after '_L' and before '.csv'
+    
+    return area, age_group, sample_group, replicate, larval_count
 
 # Step 2: Apply the function to extract grouping information and create new columns
-final_results['area'], final_results['age_group'], final_results['sample_group'], final_results['replicate'] = zip(
+final_results['area'], final_results['age_group'], final_results['sample_group'], final_results['replicate'], final_results['larval_count'] = zip(
     *final_results.apply(extract_grouping_info, axis=1)
 )
 
 # Print extracted columns to check correctness, along with all columns from final_results
 print("\nSample of Extracted Grouping Info:")
-print(final_results[['filename', 'area', 'age_group', 'sample_group', 'replicate']])
+print(final_results[['filename', 'area', 'age_group', 'sample_group', 'replicate', 'larval_count']])
 
-# Step 3: Group by age group, sample group, area, and replicate
-grouped_data = final_results.groupby(['age_group', 'sample_group', 'area', 'replicate']).agg(
+# Step 3: Group by age group, sample group, area, replicate, and larval count
+grouped_data = final_results.groupby(['age_group', 'sample_group', 'area', 'replicate', 'larval_count']).agg(
     total_area=('total_area', 'sum'),
     total_signal_area=('total_signal_area', 'sum')
 ).reset_index()
@@ -126,7 +129,7 @@ else:
     print(f"\nNumber of groups formed: {grouped_data.shape[0]}")
     print("Example groups:")
     for _, group_df in grouped_data.iterrows():
-        print(f"Group: {group_df['age_group']} {group_df['sample_group']} {group_df['area']} Replicate: {group_df['replicate']}")
+        print(f"Group: {group_df['age_group']} {group_df['sample_group']} {group_df['area']} Replicate: {group_df['replicate']} Larval Count: {group_df['larval_count']}")
         print(f"Total Area: {group_df['total_area']}, Total Signal Area: {group_df['total_signal_area']}")
 
 # Optional: Print the grouped data for inspection
@@ -243,88 +246,83 @@ for age in age_groups:
 # for each age_group, each sample_group, and each replicate
 
 
-# Step 1: Sum all areas for each age_group, sample_group, and replicate
-sum_all_areas = grouped_data.groupby(['age_group', 'sample_group', 'replicate']).agg(
+# Step 1: Sum all areas for each age_group, sample_group, replicate, and larval_count
+sum_all_areas = grouped_data.groupby(['age_group', 'sample_group', 'replicate', 'larval_count']).agg(
     total_signal_all_areas=('total_signal_area', 'sum')
 ).reset_index()
 
-# Step 2: Filter and sum only the '1st' and '2nd' areas for each age_group, sample_group, and replicate
+# Step 2: Filter and sum only the '1st' and '2nd' areas for each age_group, sample_group, replicate, and larval_count
 sum_1st_2nd_areas = grouped_data[grouped_data['area'].isin(['1st', '2nd'])].groupby(
-    ['age_group', 'sample_group', 'replicate']
+    ['age_group', 'sample_group', 'replicate', 'larval_count']
 ).agg(
     total_signal_1st_2nd=('total_signal_area', 'sum')
 ).reset_index()
 
 # Step 3: Filter and sum the '3rd' and 'Pyg' areas
 sum_3rd_pyg_areas = grouped_data[grouped_data['area'].isin(['3rd', 'Pyg'])].groupby(
-    ['age_group', 'sample_group', 'replicate']
+    ['age_group', 'sample_group', 'replicate', 'larval_count']
 ).agg(
     total_signal_3rd_pyg=('total_signal_area', 'sum')
 ).reset_index()
 
 # Step 4: Get total area for 'Head' area
 total_head_area = grouped_data[grouped_data['area'] == 'Head'].groupby(
-    ['age_group', 'sample_group', 'replicate']
+    ['age_group', 'sample_group', 'replicate', 'larval_count']
 ).agg(
     total_signal_head=('total_signal_area', 'sum')
 ).reset_index()
 
 # Step 5: Get total area for individual regions '1st', '2nd', '3rd', and 'Pyg'
 total_1st_area = grouped_data[grouped_data['area'] == '1st'].groupby(
-    ['age_group', 'sample_group', 'replicate']
+    ['age_group', 'sample_group', 'replicate', 'larval_count']
 ).agg(
     total_signal_1st=('total_signal_area', 'sum')
 ).reset_index()
 
 total_2nd_area = grouped_data[grouped_data['area'] == '2nd'].groupby(
-    ['age_group', 'sample_group', 'replicate']
+    ['age_group', 'sample_group', 'replicate', 'larval_count']
 ).agg(
     total_signal_2nd=('total_signal_area', 'sum')
 ).reset_index()
 
 total_3rd_area = grouped_data[grouped_data['area'] == '3rd'].groupby(
-    ['age_group', 'sample_group', 'replicate']
+    ['age_group', 'sample_group', 'replicate', 'larval_count']
 ).agg(
     total_signal_3rd=('total_signal_area', 'sum')
 ).reset_index()
 
 total_pyg_area = grouped_data[grouped_data['area'] == 'Pyg'].groupby(
-    ['age_group', 'sample_group', 'replicate']
+    ['age_group', 'sample_group', 'replicate', 'larval_count']
 ).agg(
     total_signal_pyg=('total_signal_area', 'sum')
 ).reset_index()
 
 # Step 6: Merge all the resulting DataFrames into one
 merged_data = pd.merge(sum_all_areas, sum_1st_2nd_areas, 
-                       on=['age_group', 'sample_group', 'replicate'], 
+                       on=['age_group', 'sample_group', 'replicate', 'larval_count'], 
                        how='left')
 merged_data = pd.merge(merged_data, sum_3rd_pyg_areas, 
-                       on=['age_group', 'sample_group', 'replicate'], 
+                       on=['age_group', 'sample_group', 'replicate', 'larval_count'], 
                        how='left')
 merged_data = pd.merge(merged_data, total_head_area, 
-                       on=['age_group', 'sample_group', 'replicate'], 
+                       on=['age_group', 'sample_group', 'replicate', 'larval_count'], 
                        how='left')
 merged_data = pd.merge(merged_data, total_1st_area, 
-                       on=['age_group', 'sample_group', 'replicate'], 
+                       on=['age_group', 'sample_group', 'replicate', 'larval_count'], 
                        how='left')
 merged_data = pd.merge(merged_data, total_2nd_area, 
-                       on=['age_group', 'sample_group', 'replicate'], 
+                       on=['age_group', 'sample_group', 'replicate', 'larval_count'], 
                        how='left')
 merged_data = pd.merge(merged_data, total_3rd_area, 
-                       on=['age_group', 'sample_group', 'replicate'], 
+                       on=['age_group', 'sample_group', 'replicate', 'larval_count'], 
                        how='left')
 merged_data = pd.merge(merged_data, total_pyg_area, 
-                       on=['age_group', 'sample_group', 'replicate'], 
+                       on=['age_group', 'sample_group', 'replicate', 'larval_count'], 
                        how='left')
 
 # Step 7: Fill any missing values in the newly merged columns with 0 (if some areas were not present)
-merged_data['total_signal_1st_2nd'].fillna(0, inplace=True)
-merged_data['total_signal_3rd_pyg'].fillna(0, inplace=True)
-merged_data['total_signal_head'].fillna(0, inplace=True)
-merged_data['total_signal_1st'].fillna(0, inplace=True)
-merged_data['total_signal_2nd'].fillna(0, inplace=True)
-merged_data['total_signal_3rd'].fillna(0, inplace=True)
-merged_data['total_signal_pyg'].fillna(0, inplace=True)
+merged_data.fillna(0, inplace=True)
+
 
 # Optional: Print the new merged data
 print("\nNew DataFrame with Summed Areas:")
@@ -442,12 +440,9 @@ for age in age_groups:
 
 
 # %%
-###TEST###
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
 
-# Assuming merged_data is already defined and structured as discussed
+
+# Plotting over dpf
 
 # Step 1: Create a figure for plotting
 plt.figure(figsize=(10, 6))
@@ -469,6 +464,9 @@ plt.legend(title='Sample Group', bbox_to_anchor=(1.05, 1), loc='upper left')
 # Step 5: Adjust layout and display
 plt.tight_layout()
 plt.show()
+
+
+
 
 
 
