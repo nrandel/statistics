@@ -82,7 +82,7 @@ print(final_results[['sample', 'filename', 'total_area', 'total_signal_area', 'w
 # Parse the data for area, age_group,sample_group
 # Assuming final_results is already defined from your previous code
 
-# Step 1: Function to extract area, age group, and sample group
+# Step 1: Function to extract area, age group, sample group, and replicate
 def extract_grouping_info(row):
     filename = row['filename']
     sample = row['sample']
@@ -91,7 +91,7 @@ def extract_grouping_info(row):
     area = filename.split('_')[0]  # Get the first part before the first underscore
     
     # Extract age group from sample (the part after 'Pd_' and before 'dpf')
-    age_group = sample.split('_')[1]  # This takes the second part (e.g., '3dpfdpf')
+    age_group = sample.split('_')[1]  # This takes the second part (e.g., '3dpf')
     
     # Shorten age_group to just the number
     age_group = age_group[:-3]  # Reduce '3dpfdpf' to '3'
@@ -99,19 +99,22 @@ def extract_grouping_info(row):
     # Extract sample group (D, T, or C) without the number
     sample_group = sample.split('_')[2][0]  # Get the first letter (C, D, or T)
     
-    return area, age_group, sample_group
+    # Extract replicate number from sample (the number after the first letter in the sample group)
+    replicate = sample.split('_')[2][1:].split('-')[0]  # Extract the number after T, C, or D
+    
+    return area, age_group, sample_group, replicate
 
 # Step 2: Apply the function to extract grouping information and create new columns
-final_results['area'], final_results['age_group'], final_results['sample_group'] = zip(
+final_results['area'], final_results['age_group'], final_results['sample_group'], final_results['replicate'] = zip(
     *final_results.apply(extract_grouping_info, axis=1)
 )
 
 # Print extracted columns to check correctness, along with all columns from final_results
 print("\nSample of Extracted Grouping Info:")
-print(final_results[['filename', 'area', 'age_group', 'sample_group'] + final_results.columns.tolist()])
+print(final_results[['filename', 'area', 'age_group', 'sample_group', 'replicate']])
 
-# Step 3: Group by age group, sample group, and area
-grouped_data = final_results.groupby(['age_group', 'sample_group', 'area']).agg(
+# Step 3: Group by age group, sample group, area, and replicate
+grouped_data = final_results.groupby(['age_group', 'sample_group', 'area', 'replicate']).agg(
     total_area=('total_area', 'sum'),
     total_signal_area=('total_signal_area', 'sum')
 ).reset_index()
@@ -123,7 +126,7 @@ else:
     print(f"\nNumber of groups formed: {grouped_data.shape[0]}")
     print("Example groups:")
     for _, group_df in grouped_data.iterrows():
-        print(f"Group: {group_df['age_group']} {group_df['sample_group']} {group_df['area']}")
+        print(f"Group: {group_df['age_group']} {group_df['sample_group']} {group_df['area']} Replicate: {group_df['replicate']}")
         print(f"Total Area: {group_df['total_area']}, Total Signal Area: {group_df['total_signal_area']}")
 
 # Optional: Print the grouped data for inspection
@@ -132,7 +135,27 @@ print(grouped_data)
 
 
 # %%
+###TEST###
+# Generate new dataframe with the sums the total area 
+# for each age_group, each sample_group, and each replicate: 
+# sum all areas, sum 1st and 2nd 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# %%
+#PLOTTING
 # Assuming final_results is already defined in your environment
 
 # Set the age group you want to plot (change this to None to plot all age groups)
