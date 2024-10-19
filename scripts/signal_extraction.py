@@ -133,29 +133,8 @@ else:
 print("\nGrouped Data:")
 print(grouped_data)
 
-
 # %%
-###TEST###
-# Generate new dataframe with the sums the total area 
-# for each age_group, each sample_group, and each replicate: 
-# sum all areas, sum 1st and 2nd 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# %%
-#PLOTTING
+#PLOTTING from grouped_data
 # Assuming final_results is already defined in your environment
 
 # Set the age group you want to plot (change this to None to plot all age groups)
@@ -210,12 +189,8 @@ plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.show()
 
 # %%
-#Single plots and adjustment for y axis. plot per day
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
-
+# PLOTTING from grouped_data
+# Single plots and adjustment for y axis. plot per day
 # Assuming final_results is defined from your previous steps
 
 # Step 1: Customize the order of sample groups (C, T, D, etc.)
@@ -256,5 +231,215 @@ for age in age_groups:
     # Adjust layout and show the plot
     plt.tight_layout()
     plt.show()
+
+
+
+
+
+# %%
+
+# Generate new dataframe with the 
+# # sum all areas, sum 1st and 2nd, sum of 3rd and pyg, head, pyg, segments only 
+# for each age_group, each sample_group, and each replicate
+
+import pandas as pd
+
+# Step 1: Sum all areas for each age_group, sample_group, and replicate
+sum_all_areas = grouped_data.groupby(['age_group', 'sample_group', 'replicate']).agg(
+    total_signal_all_areas=('total_signal_area', 'sum')
+).reset_index()
+
+# Step 2: Filter and sum only the '1st' and '2nd' areas for each age_group, sample_group, and replicate
+sum_1st_2nd_areas = grouped_data[grouped_data['area'].isin(['1st', '2nd'])].groupby(
+    ['age_group', 'sample_group', 'replicate']
+).agg(
+    total_signal_1st_2nd=('total_signal_area', 'sum')
+).reset_index()
+
+# Step 3: Filter and sum the '3rd' and 'Pyg' areas
+sum_3rd_pyg_areas = grouped_data[grouped_data['area'].isin(['3rd', 'Pyg'])].groupby(
+    ['age_group', 'sample_group', 'replicate']
+).agg(
+    total_signal_3rd_pyg=('total_signal_area', 'sum')
+).reset_index()
+
+# Step 4: Get total area for 'Head' area
+total_head_area = grouped_data[grouped_data['area'] == 'Head'].groupby(
+    ['age_group', 'sample_group', 'replicate']
+).agg(
+    total_signal_head=('total_signal_area', 'sum')
+).reset_index()
+
+# Step 5: Get total area for individual regions '1st', '2nd', '3rd', and 'Pyg'
+total_1st_area = grouped_data[grouped_data['area'] == '1st'].groupby(
+    ['age_group', 'sample_group', 'replicate']
+).agg(
+    total_signal_1st=('total_signal_area', 'sum')
+).reset_index()
+
+total_2nd_area = grouped_data[grouped_data['area'] == '2nd'].groupby(
+    ['age_group', 'sample_group', 'replicate']
+).agg(
+    total_signal_2nd=('total_signal_area', 'sum')
+).reset_index()
+
+total_3rd_area = grouped_data[grouped_data['area'] == '3rd'].groupby(
+    ['age_group', 'sample_group', 'replicate']
+).agg(
+    total_signal_3rd=('total_signal_area', 'sum')
+).reset_index()
+
+total_pyg_area = grouped_data[grouped_data['area'] == 'Pyg'].groupby(
+    ['age_group', 'sample_group', 'replicate']
+).agg(
+    total_signal_pyg=('total_signal_area', 'sum')
+).reset_index()
+
+# Step 6: Merge all the resulting DataFrames into one
+merged_data = pd.merge(sum_all_areas, sum_1st_2nd_areas, 
+                       on=['age_group', 'sample_group', 'replicate'], 
+                       how='left')
+merged_data = pd.merge(merged_data, sum_3rd_pyg_areas, 
+                       on=['age_group', 'sample_group', 'replicate'], 
+                       how='left')
+merged_data = pd.merge(merged_data, total_head_area, 
+                       on=['age_group', 'sample_group', 'replicate'], 
+                       how='left')
+merged_data = pd.merge(merged_data, total_1st_area, 
+                       on=['age_group', 'sample_group', 'replicate'], 
+                       how='left')
+merged_data = pd.merge(merged_data, total_2nd_area, 
+                       on=['age_group', 'sample_group', 'replicate'], 
+                       how='left')
+merged_data = pd.merge(merged_data, total_3rd_area, 
+                       on=['age_group', 'sample_group', 'replicate'], 
+                       how='left')
+merged_data = pd.merge(merged_data, total_pyg_area, 
+                       on=['age_group', 'sample_group', 'replicate'], 
+                       how='left')
+
+# Step 7: Fill any missing values in the newly merged columns with 0 (if some areas were not present)
+merged_data['total_signal_1st_2nd'].fillna(0, inplace=True)
+merged_data['total_signal_3rd_pyg'].fillna(0, inplace=True)
+merged_data['total_signal_head'].fillna(0, inplace=True)
+merged_data['total_signal_1st'].fillna(0, inplace=True)
+merged_data['total_signal_2nd'].fillna(0, inplace=True)
+merged_data['total_signal_3rd'].fillna(0, inplace=True)
+merged_data['total_signal_pyg'].fillna(0, inplace=True)
+
+# Optional: Print the new merged data
+print("\nNew DataFrame with Summed Areas:")
+print(merged_data)
+
+
+
+# %%
+#PLOTTING from merged data
+# Use merged_data instead of final_results
+# Set the age group you want to plot (change this to None to plot all age groups)
+selected_age_group = None  # Change this to a specific age group like '3dpf' or keep as None
+
+# Step 3: Define the custom order of age groups
+custom_age_group_order = ['3', '4', '5', '6', '7', '8']  # Adjust based on your dataset
+
+# Filter the data based on the selected age group
+if selected_age_group:
+    age_groups = [selected_age_group]
+else:
+    # Filter the age groups based on the custom order
+    age_groups = [age for age in custom_age_group_order if age in merged_data['age_group'].unique()]
+
+# Step 1: Customize the order of sample groups (C, T, D, etc.)
+custom_sample_group_order = ['C', 'T', 'D']  # Change this to your desired order
+
+# Step 2: Customize the order of areas (Head, 1st, 2nd, 3rd, Pyg)
+custom_area_order = ['total_signal_head', 'total_signal_1st_2nd', 'total_signal_3rd_pyg', 'total_signal_all_areas']  # Adjust based on your areas
+
+# Create a figure with subplots
+num_age_groups = len(age_groups)
+fig, axes = plt.subplots(nrows=1, ncols=num_age_groups, figsize=(10, 5), sharey=True)
+
+# If there's only one age group, axes will not be a list, so we need to handle that case
+if num_age_groups == 1:
+    axes = [axes]  # Convert axes to a list for consistency
+
+# Loop through each age group to create a subplot
+for ax, age in zip(axes, age_groups):
+    # Filter the data for the current age group
+    age_group_data = merged_data[merged_data['age_group'] == age]
+    
+    # Melt the data to create long format (so that columns can be plotted as values in 'area')
+    melted_data = pd.melt(age_group_data, id_vars=['age_group', 'sample_group', 'replicate'], 
+                          value_vars=['total_signal_head', 'total_signal_1st_2nd', 'total_signal_3rd_pyg', 'total_signal_all_areas'],
+                          var_name='area', value_name='total_signal_area')
+
+    # Create a strip plot for the current age group with customized orders
+    sns.stripplot(data=melted_data, x='sample_group', y='total_signal_area', 
+                  hue='area', dodge=True, marker='o', alpha=0.7, ax=ax, 
+                  order=custom_sample_group_order, hue_order=custom_area_order)
+    
+    # Set title and labels
+    ax.set_title(f'Age Group: {age}')
+    ax.set_xlabel('Sample Group')
+    ax.set_ylabel('Total Signal Area')
+
+# Adjust layout
+plt.tight_layout()
+
+# Show the legend
+plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+# Display the plot
+plt.show()
+
+# %%
+
+# PLOTTING from merged_data
+# Single plots and adjustment for y axis. plot per day
+
+# Step 1: Customize the order of sample groups (C, T, D, etc.)
+custom_sample_group_order = ['C', 'T', 'D']  # Change this to your desired order
+
+# Step 2: Customize the order of areas (total_signal_head, total_signal_1st_2nd, etc.)
+custom_area_order = ['total_signal_head', 'total_signal_1st_2nd', 'total_signal_3rd_pyg', 'total_signal_all_areas']  # Adjust based on your areas
+
+# Step 3: Plot for each age group separately with custom y-axis scaling
+age_groups = merged_data['age_group'].unique()
+
+for age in age_groups:
+    # Filter the data for the current age group
+    age_group_data = merged_data[merged_data['age_group'] == age]
+    
+    # Melt the data to create long format for plotting (so that columns become values under 'area')
+    melted_data = pd.melt(age_group_data, id_vars=['age_group', 'sample_group', 'replicate'], 
+                          value_vars=['total_signal_head', 'total_signal_1st_2nd', 'total_signal_3rd_pyg', 'total_signal_all_areas'],
+                          var_name='area', value_name='total_signal_area')
+
+    # Sort sample_group and area columns based on the custom orders
+    melted_data['sample_group'] = pd.Categorical(melted_data['sample_group'], categories=custom_sample_group_order, ordered=True)
+    melted_data['area'] = pd.Categorical(melted_data['area'], categories=custom_area_order, ordered=True)
+
+    # Create a new figure for each age group
+    plt.figure(figsize=(8, 6))
+    
+    # Create a strip plot
+    sns.stripplot(data=melted_data, x='sample_group', y='total_signal_area', 
+                  hue='area', dodge=True, marker='o', alpha=0.7, size=10, palette='Set1')
+    
+    # Set title and labels
+    plt.title(f'Strip Plot of Total Signal Area for Age Group: {age}')
+    plt.xlabel('Sample Group')
+    plt.ylabel('Total Signal Area')
+
+    # Show the legend outside the plot
+    plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Adjust y-axis scale to fit the data optimally
+    plt.ylim(melted_data['total_signal_area'].min() - 100, melted_data['total_signal_area'].max() + 1000)
+
+    # Adjust layout and show the plot
+    plt.tight_layout()
+    plt.show()
+
 
 # %%
