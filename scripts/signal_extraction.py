@@ -133,17 +133,26 @@ print(grouped_data)
 
 # %%
 
-# Strip plot for total signal area
-# Assuming final_results is defined from your previous steps
+# Assuming final_results is already defined in your environment
 
 # Set the age group you want to plot (change this to None to plot all age groups)
 selected_age_group = None  # Change this to a specific age group like '3dpf' or keep as None
+
+# Step 3: Define the custom order of age groups
+custom_age_group_order = ['3', '4', '5', '6', '7', '8']  # Adjust based on your dataset
 
 # Filter the data based on the selected age group
 if selected_age_group:
     age_groups = [selected_age_group]
 else:
-    age_groups = final_results['age_group'].unique()
+    # Filter the age groups based on the custom order
+    age_groups = [age for age in custom_age_group_order if age in final_results['age_group'].unique()]
+
+# Step 1: Customize the order of sample groups (C, T, D, etc.)
+custom_sample_group_order = ['C', 'T', 'D']  # Change this to your desired order
+
+# Step 2: Customize the order of areas (Head, 1st, 2nd, 3rd, Pyg)
+custom_area_order = ['Head', '1st', '2nd', '3rd', 'Pyg']  # Adjust based on your areas
 
 # Create a figure with subplots
 num_age_groups = len(age_groups)
@@ -158,9 +167,10 @@ for ax, age in zip(axes, age_groups):
     # Filter the data for the current age group
     age_group_data = final_results[final_results['age_group'] == age]
     
-    # Create a strip plot for the current age group
+    # Create a strip plot for the current age group with customized orders
     sns.stripplot(data=age_group_data, x='sample_group', y='total_signal_area', 
-                  hue='area', dodge=True, marker='o', alpha=0.7, ax=ax)
+                  hue='area', dodge=True, marker='o', alpha=0.7, ax=ax, 
+                  order=custom_sample_group_order, hue_order=custom_area_order)
     
     # Set title and labels
     ax.set_title(f'Age Group: {age}')
@@ -176,53 +186,8 @@ plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
 # Display the plot
 plt.show()
 
-
 # %%
-# Strip plot for weighted_avg_percent_area
-# Assuming final_results is defined from your previous steps
-
-# Set the age group you want to plot (change this to None to plot all age groups)
-selected_age_group = None  # Change this to a specific age group like '3dpf' or keep as None
-
-# Filter the data based on the selected age group
-if selected_age_group:
-    age_groups = [selected_age_group]
-else:
-    age_groups = final_results['age_group'].unique()
-
-# Create a figure with subplots
-num_age_groups = len(age_groups)
-fig, axes = plt.subplots(nrows=1, ncols=num_age_groups, figsize=(10, 5), sharey=True)
-
-# If there's only one age group, axes will not be a list, so we need to handle that case
-if num_age_groups == 1:
-    axes = [axes]  # Convert axes to a list for consistency
-
-# Loop through each age group to create a subplot
-for ax, age in zip(axes, age_groups):
-    # Filter the data for the current age group
-    age_group_data = final_results[final_results['age_group'] == age]
-    
-    # Create a strip plot for the current age group
-    sns.stripplot(data=age_group_data, x='sample_group', y='weighted_avg_percent_area', 
-                  hue='area', dodge=True, marker='o', alpha=0.7, ax=ax)
-    
-    # Set title and labels
-    ax.set_title(f'Age Group: {age}')
-    ax.set_xlabel('Sample Group')
-    ax.set_ylabel('weighted_avg_percent_area')
-
-# Adjust layout
-plt.tight_layout()
-
-# Show the legend
-plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
-
-# Display the plot
-plt.show()
-# %%
-###TEST###
-###REFINED PLOT FKT###
+#Single plots and adjustment for y axis. plot per day
 
 import matplotlib.pyplot as plt
 import seaborn as sns
