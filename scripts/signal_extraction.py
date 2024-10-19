@@ -242,7 +242,6 @@ for age in age_groups:
 # # sum all areas, sum 1st and 2nd, sum of 3rd and pyg, head, pyg, segments only 
 # for each age_group, each sample_group, and each replicate
 
-import pandas as pd
 
 # Step 1: Sum all areas for each age_group, sample_group, and replicate
 sum_all_areas = grouped_data.groupby(['age_group', 'sample_group', 'replicate']).agg(
@@ -440,6 +439,38 @@ for age in age_groups:
     # Adjust layout and show the plot
     plt.tight_layout()
     plt.show()
+
+
+# %%
+###TEST###
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Assuming merged_data is already defined and structured as discussed
+
+# Step 1: Create a figure for plotting
+plt.figure(figsize=(10, 6))
+
+# Step 2: Define the custom order for sample groups
+custom_sample_order = ['C', 'T', 'D']
+
+# Step 3: Create the strip plot for individual replicates with the custom order
+sns.stripplot(data=merged_data, x='age_group', y='total_signal_all_areas',
+               hue='sample_group', dodge=True, marker='o', alpha=1, size=7, 
+               palette='Set2', hue_order=custom_sample_order)
+
+# Step 4: Customize the plot
+plt.title('Total Signal Area by Age Group')
+plt.xlabel('Age Group')
+plt.ylabel('Total Signal Area')
+plt.legend(title='Sample Group', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+# Step 5: Adjust layout and display
+plt.tight_layout()
+plt.show()
+
+
 
 
 # %%
