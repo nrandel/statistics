@@ -395,10 +395,10 @@ plt.show()
 # Single plots and adjustment for y axis. plot per day
 
 # Step 1: Customize the order of sample groups (C, T, D, etc.)
-custom_sample_group_order = ['C', 'T', 'D']  # Change this to your desired order
+custom_sample_group_order = ['C', 'T', 'D']  # Adjust to your desired order
 
 # Step 2: Customize the order of areas (total_signal_head, total_signal_1st_2nd, etc.)
-custom_area_order = ['total_signal_head', 'total_signal_1st_2nd', 'total_signal_3rd_pyg', 'total_signal_all_areas']  # Adjust based on your areas
+custom_area_order = ['total_signal_head', 'total_signal_1st_2nd', 'total_signal_3rd_pyg']  # Adjust based on your areas
 
 # Step 3: Plot for each age group separately with custom y-axis scaling
 age_groups = merged_data['age_group'].unique()
@@ -417,11 +417,11 @@ for age in age_groups:
     melted_data['area'] = pd.Categorical(melted_data['area'], categories=custom_area_order, ordered=True)
 
     # Create a new figure for each age group
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(5, 4))
     
     # Create a strip plot
-    sns.stripplot(data=melted_data, x='sample_group', y='total_signal_area', 
-                  hue='area', dodge=True, marker='o', alpha=0.7, size=10, palette='Set1')
+    ax = sns.stripplot(data=melted_data, x='sample_group', y='total_signal_area', 
+                       hue='area', dodge=True, marker='o', alpha=0.7, size=10, palette='Set1')
     
     # Set title and labels
     plt.title(f'Strip Plot of Total Signal Area for Age Group: {age}')
@@ -431,28 +431,34 @@ for age in age_groups:
     # Show the legend outside the plot
     plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
 
-    # Adjust y-axis scale to fit the data optimally
-    plt.ylim(melted_data['total_signal_area'].min() - 100, melted_data['total_signal_area'].max() + 1000)
+    # Dynamically adjust the y-axis after plotting based on the plot's actual limits
+    y_min, y_max = ax.get_ylim()
 
-    # Adjust layout and show the plot
+    # Calculate a margin and adjust y_min and y_max
+    margin = max((y_max - y_min) * 0.1, 100)  # 10% of range or minimum 100 units
+    ax.set_ylim(y_min - margin, y_max + margin)
+
+    # Adjust layout to avoid cutting off elements
     plt.tight_layout()
+
+    # Save the plot as an SVG file, naming it based on the age group
+    # plt.savefig(f"strip_plot_age_group_{age}.svg", format='svg')
+
+    # Display the plot
     plt.show()
 
-
 # %%
-
-
 # Plotting over dpf
 
 # Step 1: Create a figure for plotting
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(9, 3))
 
 # Step 2: Define the custom order for sample groups
 custom_sample_order = ['C', 'T', 'D']
 
 # Step 3: Create the strip plot for individual replicates with the custom order
 sns.stripplot(data=merged_data, x='age_group', y='total_signal_all_areas',
-               hue='sample_group', dodge=True, marker='o', alpha=1, size=7, 
+               hue='sample_group', dodge=True, marker='o', alpha=1, size=9, 
                palette='Set2', hue_order=custom_sample_order)
 
 # Step 4: Customize the plot
@@ -463,12 +469,14 @@ plt.legend(title='Sample Group', bbox_to_anchor=(1.05, 1), loc='upper left')
 
 # Step 5: Adjust layout and display
 plt.tight_layout()
+
+
+# Step 6: Save the plot as an SVG file
+plt.savefig("/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/total_signal_area.svg", format='svg')
+
+# Step 7: Display the plot
+
 plt.show()
-
-
-
-
-
 
 
 # %%
