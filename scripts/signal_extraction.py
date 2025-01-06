@@ -12,6 +12,7 @@ import csv
 # %%
 # Calculate SUM and the weighted average or total %Area as a fraction 
 # of the entire 3D stack.
+# Values are in um
 
 
 # Define the main directory containing the sample folders
@@ -325,8 +326,8 @@ merged_data.fillna(0, inplace=True)
 
 
 # Optional: Print the new merged data
-print("\nNew DataFrame with Summed Areas:")
-print(merged_data)
+#print("\nNew DataFrame with Summed Areas:")
+#print(merged_data)
 
 
 
@@ -390,7 +391,6 @@ plt.legend(title='Area', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.show()
 
 # %%
-
 # PLOTTING from merged_data
 # Single plots and adjustment for y axis. plot per day
 
@@ -442,7 +442,7 @@ for age in age_groups:
     plt.tight_layout()
 
     # Save the plot as an SVG file, naming it based on the age group
-    # plt.savefig(f"strip_plot_age_group_{age}.svg", format='svg')
+    plt.savefig(f"/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/strip_plot_age_group_{age}.svg", format='svg')
 
     # Display the plot
     plt.show()
@@ -451,7 +451,7 @@ for age in age_groups:
 # Plotting over dpf
 
 # Step 1: Create a figure for plotting
-plt.figure(figsize=(9, 3))
+plt.figure(figsize=(6, 3))
 
 # Step 2: Define the custom order for sample groups
 custom_sample_order = ['C', 'T', 'D']
@@ -477,6 +477,9 @@ plt.savefig("/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/t
 # Step 7: Display the plot
 
 plt.show()
+
+
+# %%
 
 
 # %%
