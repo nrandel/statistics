@@ -465,7 +465,7 @@ print(f"\nResults saved to '{output_path}'")
 
 
 # %%
-"""TEST"""
+"""PUBLISHABLE"""
 #Size from EdU larvae with 3 replicates and contr (no food), T, D
 
 #Normal distributed (parametric test)
@@ -474,105 +474,177 @@ Compare Groups (Across No Food, T, D) using one-way ANOVA and Tukey's HSD for pa
 Compare Across Ages using repeated-measures ANOVA (if replicates are consistent across ages).
 Multiple Comparisons using Holm-Bonferroni correction."""
 
-
 import pandas as pd
-from scipy.stats import f_oneway
+from scipy.stats import shapiro, f_oneway
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from statsmodels.stats.multitest import multipletests
-import pingouin as pg
 
 # Load the dataset
 file_path = "/Users/nadine/Documents/paper/Naomi-NS-maturation/size-EdU-larvae.csv"
 data = pd.read_csv(file_path)
 
-# Results storage
+# Initialize results storage
 replicate_variation_results = []
-group_comparison_results = []
-age_comparison_results = []
+group_comparisons = []
+age_comparisons = []
 
-# Assess Replicate Variation
+# Get unique ages and groups
 ages = data["Age"].unique()
 groups = data["Group"].unique()
 
+# 1. Check for normal distribution for each group and replicate
+normality_results = []
+
 for age in ages:
     for group in groups:
-        # Subset data for the current group and age
+        for replicate in data[data["Group"] == group]["Replicate"].unique():
+            subset = data[(data["Age"] == age) & (data["Group"] == group) & (data["Replicate"] == replicate)]
+            if len(subset["Measurement"]) >= 3:  # Shapiro-Wilk requires at least 3 data points
+                stat, p_value = shapiro(subset["Measurement"])
+                normality_results.append({
+                    "Age": age,
+                    "Group": group,
+                    "Replicate": replicate,
+                    "W-statistic": stat,
+                    "P-value": p_value,
+                    "Normal Distribution": "Yes" if p_value > 0.05 else "No"
+                })
+
+# 2. Assess replicate variation using one-way ANOVA
+for age in ages:
+    for group in groups:
         subset = data[(data["Age"] == age) & (data["Group"] == group)]
-        
-        # Check variation among replicates using one-way ANOVA
-        replicates = subset.groupby("Replicate")["Measurement"].apply(list)
-        if len(replicates) > 1:
-            anova_result = f_oneway(*replicates)
+        grouped = subset.groupby("Replicate")["Measurement"].apply(list)
+        if all(len(g) > 1 for g in grouped):  # Ensure each replicate has data
+            stat, p_value = f_oneway(*grouped)
             replicate_variation_results.append({
                 "Age": age,
                 "Group": group,
-                "F-statistic": anova_result.statistic,
-                "P-value": anova_result.pvalue
-            })
-        else:
-            replicate_variation_results.append({
-                "Age": age,
-                "Group": group,
-                "F-statistic": None,
-                "P-value": None
+                "F-statistic": stat,
+                "P-value": p_value
             })
 
-# Compare Groups (Across No Food, T, D) for Each Age
+# 3. Compare groups across no food, T, D
 for age in ages:
     subset = data[data["Age"] == age]
-    anova_result = pg.anova(data=subset, dv="Measurement", between="Group")
-    group_comparison_results.append({
+    stat, p_value = f_oneway(
+        *[subset[subset["Group"] == group]["Measurement"] for group in groups if len(subset[subset["Group"] == group]) > 1]
+    )
+    group_comparisons.append({
         "Age": age,
-        "ANOVA F-statistic": anova_result["F"].iloc[0],
-        "ANOVA P-value": anova_result["p-unc"].iloc[0]
+        "F-statistic": stat,
+        "P-value": p_value
     })
 
-    # Post-hoc Tukey's HSD
-    tukey_result = pairwise_tukeyhsd(
-        endog=subset["Measurement"],
-        groups=subset["Group"],
-        alpha=0.05
-    )
-    for i in range(len(tukey_result.groupsunique)):
-        group1, group2 = tukey_result.groupsunique[i], tukey_result.groupsunique[j]
-        group_comparison_results.append({
-            "Age": age,
-            "Group1": group1,
-            "Group2": group2,
-            "Mean Diff": tukey_result.meandiffs[i],
-            "P-value": tukey_result.pvalues[i]
-        })
+# Apply Holm-Bonferroni correction for group comparisons
+group_p_values = [result["P-value"] for result in group_comparisons]
+adjusted_p_values = multipletests(group_p_values, method="holm")[1]
 
-# Compare Across Ages (Repeated Measures ANOVA)
-repeated_measures = data.pivot(index=["Replicate", "Group"], columns="Age", values="Measurement").reset_index()
+for i, result in enumerate(group_comparisons):
+    result["Adjusted P-value"] = adjusted_p_values[i]
+
+# 4. Compare across ages for each group
 for group in groups:
-    subset = repeated_measures[repeated_measures["Group"] == group]
-    if subset.shape[1] > 3:  # Ensure there are multiple ages for comparison
-        rm_anova_result = pg.rm_anova(data=subset, dv="Measurement", within="Age", subject="Replicate")
-        age_comparison_results.append({
-            "Group": group,
-            "ANOVA F-statistic": rm_anova_result["F"].iloc[0],
-            "P-value": rm_anova_result["p-unc"].iloc[0]
-        })
+    subset = data[data["Group"] == group]
+    stat, p_value = f_oneway(
+        *[subset[subset["Age"] == age]["Measurement"] for age in ages if len(subset[subset["Age"] == age]) > 1]
+    )
+    age_comparisons.append({
+        "Group": group,
+        "F-statistic": stat,
+        "P-value": p_value
+    })
 
-# Holm-Bonferroni Correction for Multiple Comparisons
-all_p_values = [result["P-value"] for result in group_comparison_results if "P-value" in result]
-corrected_p_values = multipletests(all_p_values, method="holm")[1]
+# Apply Holm-Bonferroni correction for age comparisons
+age_p_values = [result["P-value"] for result in age_comparisons]
+adjusted_p_values_age = multipletests(age_p_values, method="holm")[1]
 
-# Update group comparison results with corrected P-values
-for i, result in enumerate(group_comparison_results):
-    if "P-value" in result:
-        result["Adjusted P-value (Holm-Bonferroni)"] = corrected_p_values[i]
+for i, result in enumerate(age_comparisons):
+    result["Adjusted P-value"] = adjusted_p_values_age[i]
 
-# Save Results to CSV
-replicate_variation_df = pd.DataFrame(replicate_variation_results)
-group_comparison_df = pd.DataFrame(group_comparison_results)
-age_comparison_df = pd.DataFrame(age_comparison_results)
+# Save results to CSV files
+pd.DataFrame(normality_results).to_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/normality_results.csv", index=False)
+pd.DataFrame(replicate_variation_results).to_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/replicate_variation_results.csv", index=False)
+pd.DataFrame(group_comparisons).to_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/group_comparisons_results.csv", index=False)
+pd.DataFrame(age_comparisons).to_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/age_comparisons_results.csv", index=False)
 
-replicate_variation_df.to_csv("replicate_variation_results.csv", index=False)
-group_comparison_df.to_csv("group_comparison_results.csv", index=False)
-age_comparison_df.to_csv("age_comparison_results.csv", index=False)
+print("Results saved to 'normality_results.csv', 'replicate_variation_results.csv', 'group_comparisons_results.csv', and 'age_comparisons_results.csv'")
 
-print("Results saved to CSV files.")
+
+# %%
+"""PUBLISHABLE"""
+#pairwise comparison after Anova
+from itertools import combinations
+from scipy.stats import ttest_ind
+from statsmodels.stats.multitest import multipletests
+import pandas as pd
+
+# Load the dataset
+file_path = "/Users/nadine/Documents/paper/Naomi-NS-maturation/size-EdU-larvae.csv"
+data = pd.read_csv(file_path)
+
+# Initialize storage for results
+pairwise_group_results = []
+pairwise_age_results = []
+
+# 1. Pairwise t-tests for group comparisons within each age
+for age in data["Age"].unique():
+    subset = data[data["Age"] == age]
+    groups = subset["Group"].unique()
+    if len(groups) > 1:  # Need at least 2 groups to compare
+        for group1, group2 in combinations(groups, 2):
+            group1_data = subset[subset["Group"] == group1]["Measurement"]
+            group2_data = subset[subset["Group"] == group2]["Measurement"]
+            if len(group1_data) > 1 and len(group2_data) > 1:  # Require at least 2 data points per group
+                t_stat, p_value = ttest_ind(group1_data, group2_data, equal_var=False)
+                pairwise_group_results.append({
+                    "Age": age,
+                    "Group1": group1,
+                    "Group2": group2,
+                    "T-statistic": t_stat,
+                    "P-value": p_value
+                })
+
+# Convert results to DataFrame
+pairwise_group_results_df = pd.DataFrame(pairwise_group_results)
+
+# Apply Holm-Bonferroni correction to group comparisons
+group_p_values = pairwise_group_results_df["P-value"]
+adjusted_p_values_group = multipletests(group_p_values, method="holm")[1]
+pairwise_group_results_df["Adjusted P-value"] = adjusted_p_values_group
+
+# Save results
+pairwise_group_results_df.to_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/pairwise_ttest_group_comparisons.csv", index=False)
+
+# 2. Pairwise t-tests for age comparisons within each group
+for group in data["Group"].unique():
+    subset = data[data["Group"] == group]
+    ages = subset["Age"].unique()
+    if len(ages) > 1:  # Need at least 2 ages to compare
+        for age1, age2 in combinations(ages, 2):
+            age1_data = subset[subset["Age"] == age1]["Measurement"]
+            age2_data = subset[subset["Age"] == age2]["Measurement"]
+            if len(age1_data) > 1 and len(age2_data) > 1:  # Require at least 2 data points per age
+                t_stat, p_value = ttest_ind(age1_data, age2_data, equal_var=False)
+                pairwise_age_results.append({
+                    "Group": group,
+                    "Age1": age1,
+                    "Age2": age2,
+                    "T-statistic": t_stat,
+                    "P-value": p_value
+                })
+
+# Convert results to DataFrame
+pairwise_age_results_df = pd.DataFrame(pairwise_age_results)
+
+# Apply Holm-Bonferroni correction to age comparisons
+age_p_values = pairwise_age_results_df["P-value"]
+adjusted_p_values_age = multipletests(age_p_values, method="holm")[1]
+pairwise_age_results_df["Adjusted P-value"] = adjusted_p_values_age
+
+# Save results
+pairwise_age_results_df.to_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/pairwise_ttest_age_comparisons.csv", index=False)
+
+print("Pairwise t-test comparisons saved to 'pairwise_ttest_group_comparisons.csv' and 'pairwise_ttest_age_comparisons.csv'.")
 
 # %%
