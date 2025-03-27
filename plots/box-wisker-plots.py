@@ -16,7 +16,7 @@ df = pd.read_csv("/Users/nadine/Documents/paper/Naomi-NS-maturation/Feeding-Expe
 
 
 # %%
-# box and wisker plot with label on left side
+# box and whisker plot with label on left side
 #figure(figsize=(10, 8), dpi=100)
 
 ax = df.boxplot(vert=False, grid = False, color=dict(boxes='k', whiskers='k', medians='b', caps='k'), showfliers=False) #showfliers=False hide outlier datapoints
@@ -74,17 +74,6 @@ plt.xticks(rotation=45)
 # Save plot as SVG
 plt.savefig('/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/gut_content.svg', format='svg')
 
-# %%
-#TEMP
-# Import csv
-df = pd.read_csv("/Users/nadine/Desktop/test.csv")  
-
-# Plot stacked bar chart
-
-df.plot(kind='bar', stacked=True, width=0.5, figsize=(2, 5))
-
-# Save plot as SVG
-plt.savefig('/Users/nadine/Desktop/test-plot.svg', format='svg')
 
 # %%
 # test combined stacked bar (gut) and line plot (yolk)
@@ -229,5 +218,86 @@ plt.show()
 
 
 
+
+# %%
+# Plot number of neurons (mature/ immature)
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Load CSV (assuming no header and a single row of data)
+csv_file = "/Users/nadine/Documents/paper/Naomi-NS-maturation/neuron-catmaid-output03-2025.csv"  
+df = pd.read_csv(csv_file)
+
+# Transpose the DataFrame to switch rows and columns
+df = df.transpose()
+
+# Set the column names as headers for better readability
+df.columns = ['Value']
+
+# Plot the bar chart
+df.plot(kind='bar', legend=False)
+
+# Add title and labels
+plt.title('Bar Plot Example')
+plt.xlabel('Category')
+plt.ylabel('Value')
+
+# Set the x-axis labels to the actual column names
+plt.xticks(range(len(df.index)), df.index, rotation=45)  # Use index for categories
+
+# Show the plot
+plt.show()
+
+
+# %%
+# Stacked plot number of neurons (mature/ immature)
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load your CSV data with headers
+csv_file = "/Users/nadine/Documents/paper/Naomi-NS-maturation/neuron-catmaid-output03-2025.csv"  
+df = pd.read_csv(csv_file)
+
+# Transpose the DataFrame to switch rows and columns
+df = df.transpose()
+
+# Set the correct column name for the data
+df.columns = ['Value']
+
+# Reset the index to retain the original column names (so we can extract prefixes)
+df.reset_index(inplace=True)
+
+# Extract the prefixes (SN, IN, MN) and maturity status (mature, immature)
+df['Prefix'] = df['index'].str.extract(r'^(SN|IN|MN)')[0]
+df['Maturity'] = df['index'].str.extract(r'-(mature|immature)')[0]
+
+# Define the order of categories
+category_order = ['SN', 'IN', 'MN']
+
+# Pivot the DataFrame
+pivoted_df = df.pivot_table(index='Prefix', columns='Maturity', values='Value', aggfunc='sum')
+
+# Reorder the DataFrame based on the predefined order
+pivoted_df = pivoted_df.loc[category_order]
+
+# Set figure size
+fig, ax = plt.subplots(figsize=(3, 4))  # Adjust width and height here
+
+# Create the stacked bar plot with adjustable bar width
+pivoted_df.plot(kind='bar', stacked=True, width=0.4, ax=ax)  # Adjust bar width here
+
+# Add title and labels
+plt.title('Cumulative Stacked Bar Plot by Prefix and Maturity')
+plt.xlabel('Prefix')
+plt.ylabel('Value')
+
+# Save the plot as an SVG file
+plt.savefig('/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/stacked_bar_plot.svg', format='svg')
+
+# Show the plot
+plt.show()
 
 # %%
