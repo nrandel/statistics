@@ -301,3 +301,84 @@ plt.savefig('/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/s
 plt.show()
 
 # %%
+# Stacked plot number of neurons (mature/ immature neurons) PLUS dendrites 
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the CSV file
+df = pd.read_csv('/Users/nadine/Documents/paper/Naomi-NS-maturation/catmaid_neurons_dendrite_25-3-25.csv')
+
+# Transpose the DataFrame so the headers become a column
+df = df.transpose()
+
+# Set column name
+df.columns = ['Value']
+
+# Reset index to extract categories
+df.reset_index(inplace=True)
+
+# Extract Prefix (SN, IN, MN)
+df['Prefix'] = df['index'].str.extract(r'^(SN|IN|MN)')[0]
+
+# Extract Maturity (mature, immature)
+df['Maturity'] = df['index'].str.extract(r'-(mature|immature)')[0]
+
+# Initialize 'Dendrite Status' with empty string
+df['Dendrite Status'] = ''
+
+# Apply dendrite extraction **only to SN**
+df.loc[df['Prefix'] == 'SN', 'Dendrite Status'] = df['index'].str.extract(r'dendr (mat|immat)')[0]
+
+# Fill NaN values for 'Dendrite Status' (only affects IN and MN)
+df['Dendrite Status'] = df['Dendrite Status'].fillna('No Dendrite')
+
+# Drop any rows with missing Prefix or Maturity (to ensure valid data)
+df.dropna(subset=['Prefix', 'Maturity'], inplace=True)
+
+# Convert Value column to numeric (handling potential string conversion issues)
+df['Value'] = pd.to_numeric(df['Value'], errors='coerce')
+
+# Debugging check
+print("Processed DataFrame:\n", df)
+
+# Define order for the x-axis categories
+category_order = ['SN', 'IN', 'MN']
+
+# Pivot table: 
+pivoted_df = df.pivot_table(
+    index='Prefix', 
+    columns=['Maturity', 'Dendrite Status'], 
+    values='Value', 
+    aggfunc='sum'
+)
+
+# Ensure correct ordering
+pivoted_df = pivoted_df.reindex(category_order)
+
+# Debugging check
+print("Pivoted DataFrame:\n", pivoted_df)
+
+# Plot only if pivoted_df is not empty
+if pivoted_df.empty:
+    print("Error: Pivoted DataFrame is empty. Check data formatting.")
+else:
+    # Set figure size
+    fig, ax = plt.subplots(figsize=(3, 4))  # Adjust width and height as needed
+
+    # Create stacked bar plot
+    pivoted_df.plot(kind='bar', stacked=True, width=0.4, ax=ax)
+
+    # Add title and labels
+    plt.title('Stacked Bar Plot with SN Subcategories')
+    plt.xlabel('Neuron Type')
+    plt.ylabel('Value')
+
+    # Save the plot as an SVG file
+    plt.savefig('/Users/nadine/Documents/paper/Naomi-NS-maturation/generated_plots/stacked_bar_plot-dendrites.svg', format='svg')
+
+    # Show the plot
+    plt.show()
+
+
+# %%
