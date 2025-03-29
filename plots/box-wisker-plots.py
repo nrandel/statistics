@@ -460,7 +460,7 @@ for tag_pair, df_list in data_dict.items():
 
 
 # %%
-
+"""used for paper"""
 # Violin plots for tag distance, grouped for neuron typres and adjusted violin plot by normalizing width
 
 import pandas as pd
@@ -535,7 +535,7 @@ for tag_pair, df_list in data_dict.items():
     
     plt.show()
 # %%
-"""used for paper"""
+
 # Violin plots for tag distance, grouped for neuron typres and add annotations
 
 import pandas as pd
@@ -614,4 +614,65 @@ for tag_pair, df_list in data_dict.items():
     plt.savefig(save_path, format="svg")  # Save as SVG format
     
     plt.show()
+# %%
+"""Test"""
+
+#Scatterplot soma-surface over soma-centrosome distance
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import glob
+
+# Define file paths
+file_surface = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-SN_mature_soma-surface.csv"
+file_centrosome = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-SN_mature_soma-centrosome.csv"
+
+# Function to read and clean CSV files
+def load_and_clean_data(file_path):
+    df = pd.read_csv(file_path)
+    
+    # Standardize column names (strip spaces, check for hidden characters)
+    df.columns = df.columns.str.strip()
+
+    # Ensure 'cable.length' column has no leading/trailing spaces
+    df["cable.length"] = df["cable.length"].astype(str).str.strip()
+    
+    # Convert to float (in case of any hidden characters affecting parsing)
+    df["cable.length"] = pd.to_numeric(df["cable.length"], errors='coerce')
+
+    # Drop NA values
+    df = df.dropna(subset=["cable.length"])
+
+    return df
+
+# Load both datasets
+df_surface = load_and_clean_data(file_surface)
+df_centrosome = load_and_clean_data(file_centrosome)
+
+# Rename columns for clarity before merging
+df_surface = df_surface.rename(columns={"cable.length": "soma_surface_length"})
+df_centrosome = df_centrosome.rename(columns={"cable.length": "soma_centrosome_length"})
+
+# Merge datasets on 'skid' (keeping only neurons present in both datasets)
+df_merged = pd.merge(df_surface[["skid", "soma_surface_length"]], 
+                     df_centrosome[["skid", "soma_centrosome_length"]],
+                     on="skid")
+
+# Drop any remaining NA values after merging
+df_merged = df_merged.dropna()
+
+# Scatter plot
+plt.figure(figsize=(7, 7))
+sns.scatterplot(data=df_merged, x="soma_centrosome_length", y="soma_surface_length", alpha=0.7)
+
+# Labels and title
+plt.xlabel("Cable Length (Soma-Centrosome)")
+plt.ylabel("Cable Length (Soma-Surface)")
+plt.title("Scatter Plot of Cable Lengths for SN_mature Neurons")
+
+# Save and show the plot
+plt.savefig("/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/plots/scatter_SN_mature_soma_surface_vs_centrosome.svg", format="svg")
+plt.show()
+
 # %%
