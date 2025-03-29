@@ -382,3 +382,236 @@ else:
 
 
 # %%
+
+# Violin plots for tag distance, grouped for neuron typres
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import glob
+import re
+import os
+
+# Define the order of neuron types
+neuron_order = ["SN_mature", "SN_immature", "IN_mature", "IN_immature", "MN_mature", "MN_immature"]
+
+# Find all relevant CSV files
+csv_files = glob.glob("/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-*.csv")
+
+# Dictionary to store data by tag-pair
+data_dict = {}
+
+# Regular expression to extract neuron type and tag pair
+pattern = re.compile(r"cable_lengths-(\w+)_(\w+-\w+)\.csv")
+
+for file in csv_files:
+    match = pattern.search(file)
+    if match:
+        neuron_type, tag_pair = match.groups()
+        
+        # Read CSV file
+        df = pd.read_csv(file)
+        
+        # Print column names for debugging
+        print(f"Columns in {file}: {df.columns.tolist()}")
+
+        # Ensure column name consistency
+        df.columns = df.columns.str.strip().str.replace(".", "_", regex=True)
+
+        # Print column names after fixing
+        print(f"Fixed columns in {file}: {df.columns.tolist()}")
+
+        df.columns = df.columns.str.strip()  # Remove any hidden spaces
+        print(f"Cleaned column names: {df.columns.tolist()}")
+
+        # Remove NA values
+        df = df.dropna(subset=["cable_length"])
+        
+        # Add neuron type column
+        df["neuron_type"] = neuron_type
+        
+        # Store data
+        if tag_pair not in data_dict:
+            data_dict[tag_pair] = []
+        data_dict[tag_pair].append(df)
+
+# Define the directory to save plots
+save_directory = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/plots"
+
+# Plot violin plots for each tag-pair
+for tag_pair, df_list in data_dict.items():
+    combined_df = pd.concat(df_list)
+    
+    plt.figure(figsize=(10, 6))
+    sns.violinplot(data=combined_df, x="neuron_type", y="cable_length", order=neuron_order)
+    
+    plt.title(f"Cable Length Distribution for {tag_pair}")
+    plt.xlabel("Neuron Type")
+    plt.ylabel("Cable Length")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    
+    # Save the plot as SVG
+    save_path = os.path.join(save_directory, f"violin_{tag_pair}.svg")
+    plt.savefig(save_path, format="svg")  # Save as SVG format
+    
+    plt.show()
+
+
+
+# %%
+
+# Violin plots for tag distance, grouped for neuron typres and adjusted violin plot by normalizing width
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import glob
+import re
+import os
+
+# Define the order of neuron types
+neuron_order = ["SN_mature", "SN_immature", "IN_mature", "IN_immature", "MN_mature", "MN_immature"]
+
+# Find all relevant CSV files
+csv_files = glob.glob("/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-*.csv")
+
+# Dictionary to store data by tag-pair
+data_dict = {}
+
+# Regular expression to extract neuron type and tag pair
+pattern = re.compile(r"cable_lengths-(\w+)_(\w+-\w+)\.csv")
+
+for file in csv_files:
+    match = pattern.search(file)
+    if match:
+        neuron_type, tag_pair = match.groups()
+        
+        # Read CSV file
+        df = pd.read_csv(file)
+        
+        # Print column names for debugging
+        print(f"Columns in {file}: {df.columns.tolist()}")
+
+        # Ensure column name consistency
+        df.columns = df.columns.str.strip().str.replace(".", "_", regex=True)
+
+        # Print column names after fixing
+        print(f"Fixed columns in {file}: {df.columns.tolist()}")
+
+        df.columns = df.columns.str.strip()  # Remove any hidden spaces
+        print(f"Cleaned column names: {df.columns.tolist()}")
+
+        # Remove NA values
+        df = df.dropna(subset=["cable_length"])
+        
+        # Add neuron type column
+        df["neuron_type"] = neuron_type
+        
+        # Store data
+        if tag_pair not in data_dict:
+            data_dict[tag_pair] = []
+        data_dict[tag_pair].append(df)
+
+# Define the directory to save plots
+save_directory = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/plots"
+
+# Plot violin plots for each tag-pair
+for tag_pair, df_list in data_dict.items():
+    combined_df = pd.concat(df_list)
+    
+    plt.figure(figsize=(10, 6))
+    sns.violinplot(data=combined_df, x="neuron_type", y="cable_length", order=neuron_order, scale="width")
+    
+    plt.title(f"Cable Length Distribution for {tag_pair}")
+    plt.xlabel("Neuron Type")
+    plt.ylabel("Cable Length")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    
+    # Save the plot as SVG
+    save_path = os.path.join(save_directory, f"violin_{tag_pair}.svg")
+    plt.savefig(save_path, format="svg")  # Save as SVG format
+    
+    plt.show()
+# %%
+"""used for paper"""
+# Violin plots for tag distance, grouped for neuron typres and add annotations
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import glob
+import re
+import os
+
+# Define the order of neuron types
+neuron_order = ["SN_mature", "SN_immature", "IN_mature", "IN_immature", "MN_mature", "MN_immature"]
+
+# Find all relevant CSV files
+csv_files = glob.glob("/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-*.csv")
+
+# Dictionary to store data by tag-pair
+data_dict = {}
+
+# Regular expression to extract neuron type and tag pair
+pattern = re.compile(r"cable_lengths-(\w+)_(\w+-\w+)\.csv")
+
+for file in csv_files:
+    match = pattern.search(file)
+    if match:
+        neuron_type, tag_pair = match.groups()
+        
+        # Read CSV file
+        df = pd.read_csv(file)
+        
+        # Print column names for debugging
+        print(f"Columns in {file}: {df.columns.tolist()}")
+
+        # Ensure column name consistency
+        df.columns = df.columns.str.strip().str.replace(".", "_", regex=True)
+
+        # Print column names after fixing
+        print(f"Fixed columns in {file}: {df.columns.tolist()}")
+
+        df.columns = df.columns.str.strip()  # Remove any hidden spaces
+        print(f"Cleaned column names: {df.columns.tolist()}")
+
+        # Remove NA values
+        df = df.dropna(subset=["cable_length"])
+        
+        # Add neuron type column
+        df["neuron_type"] = neuron_type
+        
+        # Store data
+        if tag_pair not in data_dict:
+            data_dict[tag_pair] = []
+        data_dict[tag_pair].append(df)
+
+# Define the directory to save plots
+save_directory = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/plots"
+
+# Plot violin plots with annotations for the number of samples
+for tag_pair, df_list in data_dict.items():
+    combined_df = pd.concat(df_list)
+    
+    plt.figure(figsize=(10, 6))
+    ax = sns.violinplot(data=combined_df, x="neuron_type", y="cable_length", order=neuron_order)
+    
+    # Add annotations for the number of samples
+    for i, neuron_type in enumerate(neuron_order):
+        count = combined_df[combined_df["neuron_type"] == neuron_type].shape[0]
+        ax.text(i, 0.9, f'n = {count}', horizontalalignment='center', size=12, color='black', weight='semibold')
+    
+    plt.title(f"Cable Length Distribution for {tag_pair}")
+    plt.xlabel("Neuron Type")
+    plt.ylabel("Cable Length")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    
+    # Save the plot as SVG
+    save_path = os.path.join(save_directory, f"violin_{tag_pair}.svg")
+    plt.savefig(save_path, format="svg")  # Save as SVG format
+    
+    plt.show()
+# %%
