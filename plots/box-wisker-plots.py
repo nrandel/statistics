@@ -615,8 +615,6 @@ for tag_pair, df_list in data_dict.items():
     
     plt.show()
 # %%
-"""Test"""
-
 #Scatterplot soma-surface over soma-centrosome distance
 
 import pandas as pd
@@ -625,8 +623,8 @@ import seaborn as sns
 import glob
 
 # Define file paths
-file_surface = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-SN_mature_soma-surface.csv"
-file_centrosome = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-SN_mature_soma-centrosome.csv"
+file_surface = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-dendrite_mature_soma-surface.csv"
+file_centrosome = "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-dendrite_mature_soma-centrosome.csv"
 
 # Function to read and clean CSV files
 def load_and_clean_data(file_path):
@@ -673,6 +671,92 @@ plt.title("Scatter Plot of Cable Lengths for SN_mature Neurons")
 
 # Save and show the plot
 plt.savefig("/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/plots/scatter_SN_mature_soma_surface_vs_centrosome.svg", format="svg")
+plt.show()
+
+# %%
+#Scatterplot for multiple data-pairs
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Define file paths
+files = {
+    "SN_mature": {
+        "surface": "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-dendrite_mature_soma-surface.csv",
+        "centrosome": "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-dendrite_mature_soma-centrosome.csv",
+    },
+    "SN_immature": {
+        "surface": "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-dendrite_immature_soma-surface.csv",
+        "centrosome": "/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/data/cable_lengths-dendrite_immature_soma-centrosome.csv",
+    }
+}
+
+# Function to read and clean CSV files
+def load_and_clean_data(file_path):
+    df = pd.read_csv(file_path)
+    
+    # Standardize column names (strip spaces)
+    df.columns = df.columns.str.strip()
+
+    # Ensure 'cable.length' column is cleaned
+    df["cable.length"] = df["cable.length"].astype(str).str.strip()
+    
+    # Convert to float, handling errors
+    df["cable.length"] = pd.to_numeric(df["cable.length"], errors='coerce')
+
+    # Drop NA values
+    df = df.dropna(subset=["cable.length"])
+
+    return df
+
+# Create a list to store all datasets
+all_data = []
+
+# Process each neuron type
+for neuron_type, paths in files.items():
+    df_surface = load_and_clean_data(paths["surface"])
+    df_centrosome = load_and_clean_data(paths["centrosome"])
+
+    # Rename columns for clarity
+    df_surface = df_surface.rename(columns={"cable.length": "soma_surface_length"})
+    df_centrosome = df_centrosome.rename(columns={"cable.length": "soma_centrosome_length"})
+
+    # Merge datasets on 'skid' (only neurons present in both)
+    df_merged = pd.merge(df_surface[["skid", "soma_surface_length"]], 
+                         df_centrosome[["skid", "soma_centrosome_length"]],
+                         on="skid")
+
+    # Drop any remaining NA values after merging
+    df_merged = df_merged.dropna()
+
+    # Add neuron type column for coloring
+    df_merged["neuron_type"] = neuron_type
+
+    # Store dataset
+    all_data.append(df_merged)
+
+# Combine all datasets
+df_final = pd.concat(all_data, ignore_index=True)
+
+# Scatter plot
+plt.figure(figsize=(7, 7))
+sns.scatterplot(
+    data=df_final, 
+    x="soma_centrosome_length", 
+    y="soma_surface_length", 
+    hue="neuron_type",  # Color points by neuron type
+    palette={"SN_mature": "blue", "SN_immature": "cyan"},  # Custom colors
+    alpha=0.7
+)
+
+# Labels and title
+plt.xlabel("Cable Length (Soma-Centrosome)")
+plt.ylabel("Cable Length (Soma-Surface)")
+plt.title("Scatter Plot of Cable Lengths for SN_mature & SN_immature Neurons")
+
+# Save and show the plot
+plt.savefig("/Users/nadine/Documents/paper/Naomi-NS-maturation/R_tag-analysis/plots/scatter_SN_mature_vs_SN_immature.svg", format="svg")
 plt.show()
 
 # %%
