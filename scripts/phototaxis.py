@@ -171,7 +171,8 @@ import os
 import pandas as pd
 
 # Path to the directory containing the text files
-folder_path = r'/Users/nadine/Desktop/Tubingen/TRP_temp/Temperature/temp-4d_2/untitled folder'
+#folder_path = r'/Users/nadine/Desktop/Tubingen/TRP_temp/Temperature/temp-4d_2/untitled folder'
+folder_path = r'/Users/nadine/Desktop/Tubingen/TRP_temp/Temperature/8d/res'
 
 def analyze_displacement(data_long, frame_start=3, frame_end=None):
     # Convert 'Frame' to numeric values to avoid type issues
@@ -272,7 +273,8 @@ import seaborn as sns
 matplotlib.use('TkAgg')
 
 # Path to the directory containing the text files
-folder_path = r'/Users/nadine/Desktop/Tubingen/TRP_temp/Temperature/temp-4d_2/untitled folder'
+#folder_path = r'/Users/nadine/Desktop/Tubingen/TRP_temp/Temperature/temp-4d_2/untitled folder'
+folder_path = r'/Users/nadine/Desktop/Tubingen/TRP_temp/Temperature/4d/result'
 
 def analyze_displacement(data_long, frame_start=3, frame_end=None):
     # Convert 'Frame' to numeric values to avoid type issues
@@ -364,7 +366,7 @@ if grouped is not None:
     plt.legend(title='Temperature', loc='best')
     
     # Save the plot as a PNG file
-    plt.savefig('/Users/nadine/Desktop/untitled/plot.png', dpi=300)  # Adjust the path as needed
+    plt.savefig('/Users/nadine/Desktop/untitled/plo2.png', dpi=300)  # Adjust the path as needed
     
     # Close the plot to free memory
     plt.close()
@@ -372,6 +374,117 @@ if grouped is not None:
 else:
     print("No data to plot.")
 
+
+
+# %%
+"""TEST"""
+"""Plotting of horizontal displacement after GJ"""
+"""with upgedated filename parsing"""
+
+import os
+import re
+import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Use TkAgg backend (if necessary)
+matplotlib.use('TkAgg')
+
+# Path to the directory containing the text files
+folder_path = r'/Users/nadine/Desktop/Tubingen/TRP_temp/Temperature/4d/result'
+
+def extract_age_temp(filename):
+    """
+    Extracts age (e.g., 4d) and temperature (e.g., 10C) from the filename using regex.
+    Ignores extra info like fps or Ch0.
+    """
+    age_match = re.search(r'(\d+d)', filename, re.IGNORECASE)
+    temp_match = re.search(r'(\d+)[cC]', filename)
+    
+    age = age_match.group(1) if age_match else 'unknown'
+    temp = f"{temp_match.group(1)}C" if temp_match else 'unknown'
+    
+    return age, temp
+
+def process_files(folder_path):
+    all_data = pd.DataFrame()
+    
+    for file_name in os.listdir(folder_path):
+        if file_name.endswith('.txt'):
+            file_path = os.path.join(folder_path, file_name)
+            age, temp = extract_age_temp(file_name)
+            
+            try:
+                df = pd.read_csv(file_path, skiprows=[1], delimiter='\t', engine='python')
+            except Exception as e:
+                print(f"Error reading {file_name}: {e}")
+                continue
+
+            for i in range(1, 76):  # Assuming 75 particles
+                if all(col in df.columns for col in [f'X{i}', f'Y{i}', f'Flag{i}']):
+                    particle_df = pd.DataFrame({
+                        'Frame': df['Frame'],
+                        'Particle': i,
+                        'X': df[f'X{i}'],
+                        'Y': df[f'Y{i}'],
+                        'Flag': df[f'Flag{i}'],
+                        'Age': age,
+                        'Temperature': temp
+                    })
+                    all_data = pd.concat([all_data, particle_df], ignore_index=True)
+                else:
+                    print(f"Missing data for particle {i} in {file_name}")
+    
+    return all_data
+
+def analyze_displacement(data_long, frame_start=3, frame_end=None):
+    data_long['Frame'] = pd.to_numeric(data_long['Frame'], errors='coerce')
+
+    if frame_end is None:
+        frame_end = data_long['Frame'].max() - 3
+
+    frame_start_data = data_long[data_long['Frame'] == frame_start]
+    frame_end_data = data_long[data_long['Frame'] == frame_end]
+
+    merged = pd.merge(frame_start_data, frame_end_data, on='Particle', suffixes=('_start', '_end'))
+
+    merged['X_start'] = pd.to_numeric(merged['X_start'], errors='coerce')
+    merged['X_end'] = pd.to_numeric(merged['X_end'], errors='coerce')
+
+    merged['Displacement'] = merged['X_end'] - merged['X_start']
+    
+    if 'Age_start' in merged.columns and 'Temperature_start' in merged.columns:
+        grouped = merged.groupby(['Age_start', 'Temperature_start'])['Displacement'].agg(['mean', 'std']).reset_index()
+        return grouped
+    else:
+        print("Error: 'Age_start' or 'Temperature_start' column is missing from merged DataFrame.")
+        return None
+
+# Process and analyse the files
+data_long = process_files(folder_path)
+grouped = analyze_displacement(data_long)
+
+# Plotting
+if grouped is not None:
+    # Extract numeric temperature value for sorting
+    grouped['TempValue'] = grouped['Temperature_start'].str.extract(r'(\d+)').astype(int)
+    grouped = grouped.sort_values('TempValue')
+    
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=grouped, x='Age_start', y='mean', hue='Temperature_start', errorbar=None,
+                hue_order=grouped['Temperature_start'].unique())
+
+    plt.title('Horizontal Displacement by Age and Temperature')
+    plt.xlabel('Age')
+    plt.ylabel('Mean Displacement (X)')
+    plt.legend(title='Temperature', loc='best')
+    
+    # Save the plot
+    plt.savefig('/Users/nadine/Desktop/untitled/plot3.png', dpi=300)
+    plt.close()
+else:
+    print("No data to plot.")
 
 
 # %%
